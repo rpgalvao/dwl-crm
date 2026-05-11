@@ -22,6 +22,8 @@ Route::get('/dashboard', function () {
 // Nossa nova rota do CRM protegida por senha
 Route::middleware('auth')->group(function () {
     Route::get('/negociacoes', [DealController::class, 'index'])->name('deals.index');
+    Route::get('/negociacoes/criar', [DealController::class, 'create'])->name('deals.create');
+    Route::post('/negociacoes', [DealController::class, 'store'])->name('deals.store');
 
     // Rotas do perfil geradas pelo Breeze
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
