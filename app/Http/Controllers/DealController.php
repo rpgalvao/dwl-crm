@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
+use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\Deal;
 use Inertia\Inertia;
@@ -95,5 +96,43 @@ class DealController extends Controller
         $deal->update($validated);
 
         return redirect()->route('deals.index');
+    }
+
+    // Exibe a tela de Detalhes da Negociação
+    public function show(Deal $deal)
+    {
+        // Carrega a negociação junto com o cliente e os itens/produtos já vinculados
+        $deal->load('contact', 'items.product');
+        
+        // Puxa o catálogo de reagentes para o vendedor escolher no dropdown
+        $products = Product::orderBy('name')->get();
+
+        return Inertia::render('Deals/Show', [
+            'deal' => $deal,
+            'products' => $products
+        ]);
+    }
+
+    // Salva um novo reagente dentro desta negociação
+    public function storeItem(Request $request, Deal $deal)
+    {
+        $validated = $request->validate([
+            'product_id' => 'required|exists:products,id',
+            'quantity' => 'required|integer|min:1',
+            'unit_price' => 'required|numeric|min:0',
+        ]);
+
+        // Cria o item vinculado a esta negociação específica
+        $deal->items()->create($validated);
+
+        // Bônus: Atualiza o valor estimado da negociação somando todos os itens!
+        $novoValorTotal = 0;
+        foreach ($deal->items as $item) {
+            $novoValorTotal += ($item->quantity * $item->unit_price);
+        }
+        $deal->update(['estimated_value' => $novoValorTotal]);
+
+        // Recarrega a página silenciosamente
+        return redirect()->back();
     }
 }

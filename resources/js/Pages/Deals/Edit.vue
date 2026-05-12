@@ -141,6 +141,12 @@ const submit = () => {
                             class="flex items-center justify-end space-x-3 border-t border-gray-100 pt-6 mt-6"
                         >
                             <Link
+                                :href="route('deals.show', deal.id)"
+                                class="inline-flex justify-center items-center px-4 py-2.5 text-sm font-bold text-dwl-teal hover:text-dwl-darkblue transition-colors mr-auto"
+                            >
+                                🛒 Gerenciar Reagentes
+                            </Link>
+                            <Link
                                 :href="route('deals.index')"
                                 class="inline-flex justify-center items-center px-4 py-2.5 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
                             >

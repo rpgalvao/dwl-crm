@@ -33,10 +33,17 @@ const showingNavigationDropdown = ref(false);
                                 class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
                             >
                                 <NavLink
-                                    :href="route('dashboard')"
-                                    :active="route().current('dashboard')"
+                                    :href="route('deals.index')"
+                                    :active="route().current('deals.*')"
                                 >
-                                    Dashboard
+                                    Funil de Vendas
+                                </NavLink>
+
+                                <NavLink
+                                    :href="route('products.index')"
+                                    :active="route().current('products.*')"
+                                >
+                                    Catálogo de Reagentes
                                 </NavLink>
                             </div>
                         </div>
@@ -140,10 +147,17 @@ const showingNavigationDropdown = ref(false);
                 >
                     <div class="space-y-1 pb-3 pt-2">
                         <ResponsiveNavLink
-                            :href="route('dashboard')"
-                            :active="route().current('dashboard')"
+                            :href="route('deals.index')"
+                            :active="route().current('deals.*')"
                         >
-                            Dashboard
+                            Funil de Vendas
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            :href="route('products.index')"
+                            :active="route().current('products.*')"
+                        >
+                            Catálogo de Reagentes
                         </ResponsiveNavLink>
                     </div>
 

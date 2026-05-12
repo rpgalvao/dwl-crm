@@ -11,20 +11,24 @@ const props = defineProps({
     },
 });
 
-// Transformamos nossas colunas em um estado reativo para o drag & drop funcionar
+// Colunas atualizadas com as cores da DWL (usando opacidade /20 e /10 para não ficar muito forte)
 const board = ref([
     { id: "novo", title: "Novos Leads", bg: "bg-gray-100", deals: [] },
-    { id: "cotacao", title: "Em Cotação", bg: "bg-blue-50", deals: [] },
+    { id: "cotacao", title: "Em Cotação", bg: "bg-dwl-cyan/20", deals: [] },
     {
         id: "aprovacao",
         title: "Aguardando Aprovação",
-        bg: "bg-yellow-50",
+        bg: "bg-dwl-slate/10",
         deals: [],
     },
-    { id: "ganho", title: "Ganhos (Fechado)", bg: "bg-green-50", deals: [] },
+    {
+        id: "ganho",
+        title: "Ganhos (Fechado)",
+        bg: "bg-dwl-lightgreen",
+        deals: [],
+    },
 ]);
 
-// O watch "observa" os dados vindos do banco. Se houver novidade, ele distribui os cards nas colunas certas
 watch(
     () => props.deals,
     (novasNegociacoes) => {
@@ -37,24 +41,21 @@ watch(
     { immediate: true },
 );
 
-// A mágica acontece aqui: avisamos o Laravel que o status mudou ao arrastar
 const aoMoverCard = (evento, idDaNovaColuna) => {
     if (evento.added) {
         const negociacao = evento.added.element;
-
         router.patch(
             route("deals.update-status", negociacao.id),
             {
                 status: idDaNovaColuna,
             },
             {
-                preserveScroll: true, // Mantém a tela parada no mesmo lugar
+                preserveScroll: true,
             },
         );
     }
 };
 
-// Formata moeda com proteção contra valores nulos
 const formatarMoeda = (valor) => {
     if (!valor) return "R$ 0,00";
     return new Intl.NumberFormat("pt-BR", {
@@ -63,7 +64,6 @@ const formatarMoeda = (valor) => {
     }).format(valor);
 };
 
-// Formata data protegendo contra fuso horário e datas nulas
 const formatarData = (data) => {
     if (!data) return "Sem previsão";
     try {
@@ -82,12 +82,14 @@ const formatarData = (data) => {
     <AuthenticatedLayout>
         <template #header>
             <div class="flex justify-between items-center">
-                <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+                <h2
+                    class="font-serif font-bold text-2xl text-dwl-darkblue leading-tight"
+                >
                     Funil de Vendas (CRM)
                 </h2>
                 <Link
                     :href="route('deals.create')"
-                    class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition font-semibold text-sm shadow-sm"
+                    class="bg-dwl-teal text-white px-5 py-2.5 rounded-md hover:bg-dwl-darkblue transition font-semibold text-sm shadow-sm"
                 >
                     + Nova Negociação
                 </Link>
@@ -101,13 +103,13 @@ const formatarData = (data) => {
                         v-for="coluna in board"
                         :key="coluna.id"
                         :class="[
-                            'flex-shrink-0 w-80 rounded-lg p-4 min-h-[500px] flex flex-col',
+                            'flex-shrink-0 w-80 rounded-lg p-4 min-h-[500px] flex flex-col border border-gray-100',
                             coluna.bg,
                         ]"
                     >
                         <div class="flex justify-between items-center mb-4">
                             <h3
-                                class="font-bold text-gray-700 uppercase text-sm"
+                                class="font-bold text-dwl-darkblue uppercase text-sm"
                             >
                                 {{ coluna.title }}
                             </h3>
@@ -130,7 +132,7 @@ const formatarData = (data) => {
                                     @click="
                                         router.get(route('deals.edit', deal.id))
                                     "
-                                    class="bg-white border border-gray-200 rounded-md p-4 shadow-sm hover:shadow-md hover:ring-2 hover:ring-blue-300 transition cursor-grab active:cursor-grabbing border-l-4 border-l-blue-500"
+                                    class="bg-white border border-gray-200 rounded-md p-4 shadow-sm hover:shadow-md hover:ring-2 hover:ring-dwl-cyan transition cursor-grab active:cursor-grabbing border-l-4 border-l-dwl-darkblue"
                                 >
                                     <h4
                                         class="font-bold text-gray-800 text-sm mb-1"
@@ -150,7 +152,7 @@ const formatarData = (data) => {
                                         class="flex justify-between items-end mt-3"
                                     >
                                         <span
-                                            class="text-sm font-bold text-green-600"
+                                            class="text-sm font-bold text-dwl-teal"
                                         >
                                             {{
                                                 formatarMoeda(
@@ -159,7 +161,7 @@ const formatarData = (data) => {
                                             }}
                                         </span>
                                         <span
-                                            class="text-[10px] text-gray-500 bg-gray-100 border border-gray-200 px-2 py-1 rounded"
+                                            class="text-[10px] text-gray-500 bg-gray-50 border border-gray-200 px-2 py-1 rounded"
                                         >
                                             Prev:
                                             {{
