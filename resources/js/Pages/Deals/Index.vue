@@ -1,6 +1,8 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link } from "@inertiajs/vue3";
+import { Head, Link, router } from "@inertiajs/vue3";
+import draggable from "vuedraggable";
+import { ref, watch } from "vue";
 
 const props = defineProps({
     deals: {
@@ -9,15 +11,47 @@ const props = defineProps({
     },
 });
 
-const columns = [
-    { id: "novo", title: "Novos Leads", bg: "bg-gray-100" },
-    { id: "cotacao", title: "Em Cotação", bg: "bg-blue-50" },
-    { id: "aprovacao", title: "Aguardando Aprovação", bg: "bg-yellow-50" },
-    { id: "ganho", title: "Ganhos (Fechado)", bg: "bg-green-50" },
-];
+// Transformamos nossas colunas em um estado reativo para o drag & drop funcionar
+const board = ref([
+    { id: "novo", title: "Novos Leads", bg: "bg-gray-100", deals: [] },
+    { id: "cotacao", title: "Em Cotação", bg: "bg-blue-50", deals: [] },
+    {
+        id: "aprovacao",
+        title: "Aguardando Aprovação",
+        bg: "bg-yellow-50",
+        deals: [],
+    },
+    { id: "ganho", title: "Ganhos (Fechado)", bg: "bg-green-50", deals: [] },
+]);
 
-const getDealsByStatus = (status) => {
-    return props.deals.filter((deal) => deal.status === status);
+// O watch "observa" os dados vindos do banco. Se houver novidade, ele distribui os cards nas colunas certas
+watch(
+    () => props.deals,
+    (novasNegociacoes) => {
+        board.value.forEach((coluna) => {
+            coluna.deals = novasNegociacoes.filter(
+                (deal) => deal.status === coluna.id,
+            );
+        });
+    },
+    { immediate: true },
+);
+
+// A mágica acontece aqui: avisamos o Laravel que o status mudou ao arrastar
+const aoMoverCard = (evento, idDaNovaColuna) => {
+    if (evento.added) {
+        const negociacao = evento.added.element;
+
+        router.patch(
+            route("deals.update-status", negociacao.id),
+            {
+                status: idDaNovaColuna,
+            },
+            {
+                preserveScroll: true, // Mantém a tela parada no mesmo lugar
+            },
+        );
+    }
 };
 
 // Formata moeda com proteção contra valores nulos
@@ -29,18 +63,12 @@ const formatarMoeda = (valor) => {
     }).format(valor);
 };
 
-// Formata data de forma blindada cortando o texto exato
+// Formata data protegendo contra fuso horário e datas nulas
 const formatarData = (data) => {
     if (!data) return "Sem previsão";
-
     try {
-        // Separa o texto pelo "T" (se existir) e pega a primeira parte (YYYY-MM-DD)
         const apenasData = data.split("T")[0];
-
-        // Fatiamos nos tracinhos
         const [ano, mes, dia] = apenasData.split("-");
-
-        // Retornamos no formato brasileiro
         return `${dia}/${mes}/${ano}`;
     } catch (e) {
         return "Erro na data";
@@ -70,66 +98,80 @@ const formatarData = (data) => {
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <div class="flex overflow-x-auto gap-6 pb-4 items-start">
                     <div
-                        v-for="column in columns"
-                        :key="column.id"
+                        v-for="coluna in board"
+                        :key="coluna.id"
                         :class="[
-                            'flex-shrink-0 w-80 rounded-lg p-4 min-h-[500px]',
-                            column.bg,
+                            'flex-shrink-0 w-80 rounded-lg p-4 min-h-[500px] flex flex-col',
+                            coluna.bg,
                         ]"
                     >
                         <div class="flex justify-between items-center mb-4">
                             <h3
                                 class="font-bold text-gray-700 uppercase text-sm"
                             >
-                                {{ column.title }}
+                                {{ coluna.title }}
                             </h3>
                             <span
                                 class="bg-white text-gray-600 text-xs font-bold px-2 py-1 rounded-full shadow-sm"
                             >
-                                {{ getDealsByStatus(column.id).length }}
+                                {{ coluna.deals.length }}
                             </span>
                         </div>
 
-                        <div class="space-y-3">
-                            <div
-                                v-for="deal in getDealsByStatus(column.id)"
-                                :key="deal.id"
-                                class="bg-white border border-gray-200 rounded-md p-4 shadow-sm hover:shadow-md transition cursor-pointer border-l-4 border-l-blue-500"
-                            >
-                                <h4
-                                    class="font-bold text-gray-800 text-sm mb-1"
-                                >
-                                    {{ deal.title }}
-                                </h4>
-                                <p class="text-xs text-gray-600 mb-2">
-                                    <span class="font-semibold">Cliente:</span>
-                                    {{
-                                        deal.contact?.name || "Cliente Removido"
-                                    }}
-                                </p>
+                        <draggable
+                            v-model="coluna.deals"
+                            group="negociacoes"
+                            item-key="id"
+                            class="flex-1 space-y-3"
+                            @change="aoMoverCard($event, coluna.id)"
+                        >
+                            <template #item="{ element: deal }">
                                 <div
-                                    class="flex justify-between items-end mt-3"
+                                    @click="
+                                        router.get(route('deals.edit', deal.id))
+                                    "
+                                    class="bg-white border border-gray-200 rounded-md p-4 shadow-sm hover:shadow-md hover:ring-2 hover:ring-blue-300 transition cursor-grab active:cursor-grabbing border-l-4 border-l-blue-500"
                                 >
-                                    <span
-                                        class="text-sm font-bold text-green-600"
+                                    <h4
+                                        class="font-bold text-gray-800 text-sm mb-1"
                                     >
+                                        {{ deal.title }}
+                                    </h4>
+                                    <p class="text-xs text-gray-600 mb-2">
+                                        <span class="font-semibold"
+                                            >Cliente:</span
+                                        >
                                         {{
-                                            formatarMoeda(deal.estimated_value)
+                                            deal.contact?.name ||
+                                            "Cliente Removido"
                                         }}
-                                    </span>
-                                    <span
-                                        class="text-[10px] text-gray-500 bg-gray-100 border border-gray-200 px-2 py-1 rounded"
+                                    </p>
+                                    <div
+                                        class="flex justify-between items-end mt-3"
                                     >
-                                        Prev:
-                                        {{
-                                            formatarData(
-                                                deal.expected_closed_at,
-                                            )
-                                        }}
-                                    </span>
+                                        <span
+                                            class="text-sm font-bold text-green-600"
+                                        >
+                                            {{
+                                                formatarMoeda(
+                                                    deal.estimated_value,
+                                                )
+                                            }}
+                                        </span>
+                                        <span
+                                            class="text-[10px] text-gray-500 bg-gray-100 border border-gray-200 px-2 py-1 rounded"
+                                        >
+                                            Prev:
+                                            {{
+                                                formatarData(
+                                                    deal.expected_closed_at,
+                                                )
+                                            }}
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                        </div>
+                            </template>
+                        </draggable>
                     </div>
                 </div>
             </div>

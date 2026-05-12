@@ -24,6 +24,9 @@ Route::middleware('auth')->group(function () {
     Route::get('/negociacoes', [DealController::class, 'index'])->name('deals.index');
     Route::get('/negociacoes/criar', [DealController::class, 'create'])->name('deals.create');
     Route::post('/negociacoes', [DealController::class, 'store'])->name('deals.store');
+    Route::patch('/negociacoes/{deal}/status', [DealController::class, 'updateStatus'])->name('deals.update-status');
+    Route::get('/negociacoes/{deal}/editar', [DealController::class, 'edit'])->name('deals.edit');
+    Route::put('/negociacoes/{deal}', [DealController::class, 'update'])->name('deals.update');
 
     // Rotas do perfil geradas pelo Breeze
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
