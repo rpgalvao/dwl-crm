@@ -45,6 +45,13 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Catálogo de Reagentes
                                 </NavLink>
+
+                                <NavLink
+                                    :href="route('contacts.index')"
+                                    :active="route().current('contacts.*')"
+                                >
+                                    Clientes
+                                </NavLink>
                             </div>
                         </div>
 
@@ -158,6 +165,13 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('products.*')"
                         >
                             Catálogo de Reagentes
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            :href="route('contacts.index')"
+                            :active="route().current('contacts.*')"
+                        >
+                            Clientes
                         </ResponsiveNavLink>
                     </div>
 

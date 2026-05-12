@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DealController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ContactController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -34,6 +35,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/produtos/{product}/editar', [ProductController::class, 'edit'])->name('products.edit');
     Route::put('/produtos/{product}', [ProductController::class, 'update'])->name('products.update');
     Route::delete('/produtos/{product}', [ProductController::class, 'destroy'])->name('products.destroy');
+
+    // Rotas de Contatos (Clientes)
+    Route::get('/contatos', [ContactController::class, 'index'])->name('contacts.index');
+    Route::get('/contatos/novo', [ContactController::class, 'create'])->name('contacts.create');
+    Route::post('/contatos', [ContactController::class, 'store'])->name('contacts.store');
+    Route::get('/contatos/{contact}/editar', [ContactController::class, 'edit'])->name('contacts.edit');
+    Route::put('/contatos/{contact}', [ContactController::class, 'update'])->name('contacts.update');
+    Route::delete('/contatos/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
 
     // Rotas do perfil geradas pelo Breeze
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
