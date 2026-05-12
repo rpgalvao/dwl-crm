@@ -11,16 +11,24 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // 1. Cálculos de Quantidade
+        // 1. Cálculos de Quantidade Gerais
         $totalClientes = Contact::count();
         $negociacoesAtivas = Deal::whereIn('status', ['novo', 'cotacao', 'aprovacao'])->count();
         $negociacoesGanhas = Deal::where('status', 'ganho')->count();
 
-        // 2. Cálculos Financeiros (Somando os valores do funil)
+        // 2. Cálculos Financeiros
         $valorTotalGanho = Deal::where('status', 'ganho')->sum('estimated_value');
         $valorFunil = Deal::whereIn('status', ['novo', 'cotacao', 'aprovacao'])->sum('estimated_value');
 
-        // 3. Puxar as 5 últimas negociações para mostrar na tela inicial
+        // 3. Dados para o Gráfico (Contagem separada por etapa)
+        $graficoFunil = [
+            Deal::where('status', 'novo')->count(),
+            Deal::where('status', 'cotacao')->count(),
+            Deal::where('status', 'aprovacao')->count(),
+            Deal::where('status', 'ganho')->count(),
+        ];
+
+        // 4. Últimas negociações
         $ultimasNegociacoes = Deal::with('contact')
             ->orderBy('created_at', 'desc')
             ->take(5)
@@ -34,6 +42,7 @@ class DashboardController extends Controller
                 'valorGanho' => $valorTotalGanho,
                 'valorFunil' => $valorFunil,
             ],
+            'chartData' => $graficoFunil,
             'recentDeals' => $ultimasNegociacoes
         ]);
     }

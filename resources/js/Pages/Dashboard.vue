@@ -1,11 +1,50 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head, Link } from "@inertiajs/vue3";
+import { Doughnut } from "vue-chartjs";
+import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 
-defineProps({
+// Registrando os componentes do Chart.js
+ChartJS.register(ArcElement, Tooltip, Legend);
+
+const props = defineProps({
     metrics: Object,
+    chartData: Array,
     recentDeals: Array,
 });
+
+// Configuração do Gráfico com as cores da DWL
+const chartConfig = {
+    labels: ["Novos Leads", "Em Cotação", "Aprovação", "Ganhos"],
+    datasets: [
+        {
+            backgroundColor: [
+                "#70808F", // Cinza Slate (Novos)
+                "#ACF0F2", // Ciano (Cotação)
+                "#225378", // Azul Escuro (Aprovação)
+                "#179680", // Teal/Verde (Ganhos)
+            ],
+            data: props.chartData,
+            borderWidth: 2,
+            hoverOffset: 4,
+        },
+    ],
+};
+
+const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+        legend: {
+            position: "bottom",
+            labels: {
+                usePointStyle: true,
+                padding: 20,
+                font: { family: "'Open Sans', sans-serif", size: 12 },
+            },
+        },
+    },
+};
 
 const formatarMoeda = (valor) => {
     return new Intl.NumberFormat("pt-BR", {
@@ -87,109 +126,126 @@ const formatarData = (data) => {
                     </div>
                 </div>
 
-                <div
-                    class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200"
-                >
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <div
-                        class="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center"
+                        class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 lg:col-span-1 flex flex-col"
                     >
-                        <h3
-                            class="font-serif font-bold text-lg text-dwl-darkblue"
+                        <div class="p-6 border-b border-gray-200 bg-gray-50">
+                            <h3
+                                class="font-serif font-bold text-lg text-dwl-darkblue"
+                            >
+                                Propostas por Status
+                            </h3>
+                        </div>
+                        <div
+                            class="p-6 flex-1 flex justify-center items-center min-h-[300px]"
                         >
-                            Negociações Mais Recentes
-                        </h3>
-                        <Link
-                            :href="route('deals.index')"
-                            class="text-sm font-bold text-dwl-teal hover:text-dwl-darkblue"
-                            >Ver Funil Completo &rarr;</Link
-                        >
+                            <Doughnut
+                                :data="chartConfig"
+                                :options="chartOptions"
+                            />
+                        </div>
                     </div>
 
-                    <div v-if="recentDeals.length > 0">
-                        <table
-                            class="min-w-full divide-y divide-gray-200 text-sm"
+                    <div
+                        class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 lg:col-span-2 flex flex-col"
+                    >
+                        <div
+                            class="p-6 border-b border-gray-200 bg-gray-50 flex justify-between items-center"
                         >
-                            <thead class="bg-white">
-                                <tr>
-                                    <th
-                                        class="px-6 py-3 text-left font-semibold text-dwl-slate uppercase tracking-wider"
-                                    >
-                                        Título
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-left font-semibold text-dwl-slate uppercase tracking-wider"
-                                    >
-                                        Cliente
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-center font-semibold text-dwl-slate uppercase tracking-wider"
-                                    >
-                                        Status
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-right font-semibold text-dwl-slate uppercase tracking-wider"
-                                    >
-                                        Previsão
-                                    </th>
-                                    <th
-                                        class="px-6 py-3 text-right font-semibold text-dwl-slate uppercase tracking-wider"
-                                    >
-                                        Valor Estimado
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody class="bg-white divide-y divide-gray-200">
-                                <tr
-                                    v-for="deal in recentDeals"
-                                    :key="deal.id"
-                                    class="hover:bg-gray-50 transition"
-                                >
-                                    <td
-                                        class="px-6 py-4 font-bold text-dwl-darkblue"
-                                    >
-                                        {{ deal.title }}
-                                    </td>
-                                    <td class="px-6 py-4 text-gray-600">
-                                        {{ deal.contact?.name || "-" }}
-                                    </td>
-                                    <td class="px-6 py-4 text-center">
-                                        <span
-                                            class="px-3 py-1 rounded-full text-xs font-bold border"
-                                            :class="{
-                                                'bg-dwl-lightgreen text-green-800 border-green-200':
-                                                    deal.status === 'ganho',
-                                                'bg-gray-100 text-gray-800 border-gray-200':
-                                                    deal.status !== 'ganho',
-                                            }"
+                            <h3
+                                class="font-serif font-bold text-lg text-dwl-darkblue"
+                            >
+                                Negociações Mais Recentes
+                            </h3>
+                            <Link
+                                :href="route('deals.index')"
+                                class="text-sm font-bold text-dwl-teal hover:text-dwl-darkblue"
+                                >Ver Funil &rarr;</Link
+                            >
+                        </div>
+
+                        <div
+                            v-if="recentDeals.length > 0"
+                            class="flex-1 overflow-x-auto"
+                        >
+                            <table
+                                class="min-w-full divide-y divide-gray-200 text-sm h-full"
+                            >
+                                <thead class="bg-white">
+                                    <tr>
+                                        <th
+                                            class="px-6 py-3 text-left font-semibold text-dwl-slate uppercase tracking-wider"
                                         >
-                                            {{ deal.status.toUpperCase() }}
-                                        </span>
-                                    </td>
-                                    <td
-                                        class="px-6 py-4 text-right text-gray-500"
+                                            Título
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-left font-semibold text-dwl-slate uppercase tracking-wider"
+                                        >
+                                            Cliente
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-center font-semibold text-dwl-slate uppercase tracking-wider"
+                                        >
+                                            Status
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-right font-semibold text-dwl-slate uppercase tracking-wider"
+                                        >
+                                            Previsão
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody
+                                    class="bg-white divide-y divide-gray-200"
+                                >
+                                    <tr
+                                        v-for="deal in recentDeals"
+                                        :key="deal.id"
+                                        class="hover:bg-gray-50 transition"
                                     >
-                                        {{
-                                            formatarData(
-                                                deal.expected_closed_at,
-                                            )
-                                        }}
-                                    </td>
-                                    <td
-                                        class="px-6 py-4 text-right font-bold text-dwl-teal"
-                                    >
-                                        {{
-                                            formatarMoeda(deal.estimated_value)
-                                        }}
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div v-else class="text-center py-10">
-                        <p class="text-gray-500 italic">
-                            Ainda não há negociações cadastradas.
-                        </p>
+                                        <td
+                                            class="px-6 py-4 font-bold text-dwl-darkblue"
+                                        >
+                                            {{ deal.title }}
+                                        </td>
+                                        <td class="px-6 py-4 text-gray-600">
+                                            {{ deal.contact?.name || "-" }}
+                                        </td>
+                                        <td class="px-6 py-4 text-center">
+                                            <span
+                                                class="px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider"
+                                                :class="{
+                                                    'bg-dwl-lightgreen text-dwl-teal border-dwl-teal/30':
+                                                        deal.status === 'ganho',
+                                                    'bg-gray-100 text-gray-600 border-gray-200':
+                                                        deal.status !== 'ganho',
+                                                }"
+                                            >
+                                                {{ deal.status }}
+                                            </span>
+                                        </td>
+                                        <td
+                                            class="px-6 py-4 text-right text-gray-500 font-medium"
+                                        >
+                                            {{
+                                                formatarData(
+                                                    deal.expected_closed_at,
+                                                )
+                                            }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div
+                            v-else
+                            class="text-center py-10 flex-1 flex items-center justify-center"
+                        >
+                            <p class="text-gray-500 italic">
+                                Ainda não há negociações cadastradas.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>
