@@ -1,5 +1,5 @@
-# Usa o PHP 8.2 oficial
-FROM php:8.2-cli
+# Usa o PHP 8.4 oficial
+FROM php:8.4-cli
 
 # Instala dependências do sistema e o Node.js 20 (para compilar o Vue)
 RUN apt-get update && apt-get install -y \
