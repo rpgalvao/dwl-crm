@@ -37,5 +37,8 @@ RUN npm run build
 # Dá as permissões corretas para o Laravel poder salvar arquivos de log e cache
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
-# Comando final: Roda as migrações no banco Neon e liga o servidor na porta que o Render escolher
+# GARANTIA DE SUCESSO: Força a exclusão de qualquer cache que tenha ido pro GitHub por engano
+RUN rm -f /app/bootstrap/cache/*.php
+
+# Comando final
 CMD php artisan config:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT

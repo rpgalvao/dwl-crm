@@ -2,4 +2,4 @@
 .env.example
 /vendor
 /node_modules
-/public/build
+/public/build 
