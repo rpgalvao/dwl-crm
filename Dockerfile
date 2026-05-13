@@ -40,5 +40,5 @@ RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 # GARANTIA DE SUCESSO: Força a exclusão de qualquer cache que tenha ido pro GitHub por engano
 RUN rm -f /app/bootstrap/cache/*.php
 
-# Comando final: Despeja as variáveis do Render num .env, salva no cache, migra e roda
-CMD printenv > .env && php artisan config:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+# Comando final: Limpa cache, cria as tabelas no banco e sobe a aplicação
+CMD php artisan config:cache && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
