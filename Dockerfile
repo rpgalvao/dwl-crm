@@ -38,4 +38,4 @@ RUN npm run build
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
 # Comando final: Roda as migrações no banco Neon e liga o servidor na porta que o Render escolher
-CMD php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+CMD php artisan config:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
