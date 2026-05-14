@@ -57,7 +57,7 @@ Route::middleware('auth')->group(function () {
 });
 
 // Rota secreta para virar Admin (vamos apagar isso depois!)
-Route::get('/virar-admin', function () {
+/* Route::get('/virar-admin', function () {
     $user = User::where('email', 'renato@dwldiagnostica.com')->first();
     
     if (!$user) {
@@ -66,6 +66,6 @@ Route::get('/virar-admin', function () {
 
     $user->update(['is_admin' => true]);
     return 'SUCESSO ABSOLUTO! Você agora é Administrador. Pode voltar para o sistema e ver o menu Equipe!';
-});
+}); */
 
 require __DIR__.'/auth.php';
