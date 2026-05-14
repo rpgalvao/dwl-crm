@@ -5,6 +5,7 @@ use App\Http\Controllers\DealController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -43,6 +44,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/contatos/{contact}/editar', [ContactController::class, 'edit'])->name('contacts.edit');
     Route::put('/contatos/{contact}', [ContactController::class, 'update'])->name('contacts.update');
     Route::delete('/contatos/{contact}', [ContactController::class, 'destroy'])->name('contacts.destroy');
+
+    // Gestão de Equipe (Usuários)
+    Route::get('/users', [UserController::class, 'index'])->name('users.index');
+    Route::patch('/users/{user}/toggle-admin', [UserController::class, 'toggleAdmin'])->name('users.toggle-admin');
 
     // Rotas do perfil geradas pelo Breeze
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

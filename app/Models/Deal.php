@@ -10,7 +10,7 @@ class Deal extends Model
 {
     protected $fillable = [
         'contact_id', 'title', 'estimated_value', 'status',
-        'expected_closed_at', 'last_contact_at'
+        'expected_closed_at', 'last_contact_at', 'user_id'
     ];
 
     protected $casts = [
@@ -26,5 +26,10 @@ class Deal extends Model
     public function items(): HasMany
     {
         return $this->hasMany(DealItem::class);
+    }
+
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 }

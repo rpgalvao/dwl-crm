@@ -59,6 +59,14 @@ const showingNavigationDropdown = ref(false);
                                 >
                                     Clientes
                                 </NavLink>
+
+                                <NavLink
+                                    v-if="$page.props.auth.user.is_admin"
+                                    :href="route('users.index')"
+                                    :active="route().current('users.index')"
+                                >
+                                    Equipe
+                                </NavLink>
                             </div>
                         </div>
 
@@ -186,6 +194,14 @@ const showingNavigationDropdown = ref(false);
                             :active="route().current('contacts.*')"
                         >
                             Clientes
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink
+                            v-if="$page.props.auth.user.is_admin"
+                            :href="route('users.index')"
+                            :active="route().current('users.index')"
+                        >
+                            Equipe
                         </ResponsiveNavLink>
                     </div>
 

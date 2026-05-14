@@ -12,12 +12,26 @@ class DealController extends Controller
 {
     public function index()
     {
-        // Buscamos as negociações e já trazemos os dados do contato (Eager Loading)
-        $deals = Deal::with('contact')->get();
+        // Começa a montar a busca no banco
+        $query = Deal::with('contact');
 
-        // Renderizamos a view do Vue.js, passando os dados
+        // Se o usuário NÃO for admin, filtra apenas as negociações dele
+        if (!auth()->user()->is_admin) {
+            $query->where('user_id', auth()->id());
+        }
+
+        $deals = $query->get();
+
+        // Agrupa os resultados por status (seu código atual de agrupamento continua aqui)
+        $groupedDeals = [
+            'novo' => $deals->where('status', 'novo')->values(),
+            'cotacao' => $deals->where('status', 'cotacao')->values(),
+            'aprovacao' => $deals->where('status', 'aprovacao')->values(),
+            'ganho' => $deals->where('status', 'ganho')->values(),
+        ];
+
         return Inertia::render('Deals/Index', [
-            'deals' => $deals
+            'deals' => $groupedDeals
         ]);
     }
 
@@ -43,18 +57,14 @@ class DealController extends Controller
             'expected_closed_at' => 'required|date',
         ]);
 
-        // 2. Cria a negociação definindo o status inicial como 'novo'
-        Deal::create([
-            'title' => $validated['title'],
-            'contact_id' => $validated['contact_id'],
-            'estimated_value' => $validated['estimated_value'],
-            'expected_closed_at' => $validated['expected_closed_at'],
-            'status' => 'novo', // Todo novo negócio entra na primeira coluna!
-            'last_contact_at' => now(),
+        // Pega os dados validados e junta com o ID do usuário logado
+        $dealData = array_merge($validated, [
+            'user_id' => auth()->id()
         ]);
 
-        // 3. Redireciona de volta para o Kanban
-        return redirect()->route('deals.index');
+        Deal::create($dealData);
+
+        return redirect()->back()->with('success', 'Negociação criada com sucesso!');
     }
 
     // Atualiza apenas o status quando o card é arrastado

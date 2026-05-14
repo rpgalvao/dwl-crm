@@ -11,25 +11,35 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // 1. Cálculos de Quantidade Gerais
-        $totalClientes = Contact::count();
-        $negociacoesAtivas = Deal::whereIn('status', ['novo', 'cotacao', 'aprovacao'])->count();
-        $negociacoesGanhas = Deal::where('status', 'ganho')->count();
+        $user = auth()->user();
 
-        // 2. Cálculos Financeiros
-        $valorTotalGanho = Deal::where('status', 'ganho')->sum('estimated_value');
-        $valorFunil = Deal::whereIn('status', ['novo', 'cotacao', 'aprovacao'])->sum('estimated_value');
+        // Inicia as queries-base
+        $dealsQuery = Deal::query();
+        
+        // Se NÃO for admin, trava tudo para o ID dele
+        if (!$user->is_admin) {
+            $dealsQuery->where('user_id', $user->id);
+        }
 
-        // 3. Dados para o Gráfico (Contagem separada por etapa)
+        // 1. Cálculos de Quantidade usando a query filtrada
+        $totalClientes = Contact::count(); // Clientes geralmente são visíveis para todos
+        $negociacoesAtivas = (clone $dealsQuery)->whereIn('status', ['novo', 'cotacao', 'aprovacao'])->count();
+        $negociacoesGanhas = (clone $dealsQuery)->where('status', 'ganho')->count();
+
+        // 2. Cálculos Financeiros usando a query filtrada
+        $valorTotalGanho = (clone $dealsQuery)->where('status', 'ganho')->sum('estimated_value');
+        $valorFunil = (clone $dealsQuery)->whereIn('status', ['novo', 'cotacao', 'aprovacao'])->sum('estimated_value');
+
+        // 3. Dados para o Gráfico
         $graficoFunil = [
-            Deal::where('status', 'novo')->count(),
-            Deal::where('status', 'cotacao')->count(),
-            Deal::where('status', 'aprovacao')->count(),
-            Deal::where('status', 'ganho')->count(),
+            (clone $dealsQuery)->where('status', 'novo')->count(),
+            (clone $dealsQuery)->where('status', 'cotacao')->count(),
+            (clone $dealsQuery)->where('status', 'aprovacao')->count(),
+            (clone $dealsQuery)->where('status', 'ganho')->count(),
         ];
 
         // 4. Últimas negociações
-        $ultimasNegociacoes = Deal::with('contact')
+        $ultimasNegociacoes = (clone $dealsQuery)->with('contact')
             ->orderBy('created_at', 'desc')
             ->take(5)
             ->get();
