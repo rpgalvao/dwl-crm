@@ -6,6 +6,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\UserController;
+use App\Models\User;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -53,6 +54,18 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Rota secreta para virar Admin (vamos apagar isso depois!)
+Route::get('/virar-admin', function () {
+    $user = User::where('email', 'renato@dwldiagnostica.com')->first();
+    
+    if (!$user) {
+        return 'Usuário não encontrado. Você já criou a sua conta na tela de registro do sistema?';
+    }
+
+    $user->update(['is_admin' => true]);
+    return 'SUCESSO ABSOLUTO! Você agora é Administrador. Pode voltar para o sistema e ver o menu Equipe!';
 });
 
 require __DIR__.'/auth.php';

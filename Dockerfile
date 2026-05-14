@@ -43,6 +43,7 @@ CMD rm -f database/database.sqlite && \
     echo "APP_ENV=production" > .env && \
     echo "APP_KEY=\"${APP_KEY}\"" >> .env && \
     echo "APP_URL=\"${APP_URL}\"" >> .env && \
+    echo "APP_LOCALE=\"${APP_LOCALE}\"" >> .env && \
     echo "DB_CONNECTION=pgsql" >> .env && \
     echo "DB_HOST=\"${DB_HOST}\"" >> .env && \
     echo "DB_PORT=\"${DB_PORT}\"" >> .env && \
