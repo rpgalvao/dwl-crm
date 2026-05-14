@@ -11,12 +11,13 @@ RUN apt-get update && apt-get install -y \
     zip \
     unzip \
     libpq-dev \
+    libicu-dev \
     && curl -fsSL https://deb.nodesource.com/setup_20.x | bash - \
     && apt-get install -y nodejs \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Instala as extensões do PHP necessárias para o Laravel e o banco Neon (PostgreSQL)
-RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd
+RUN docker-php-ext-install pdo_pgsql mbstring exif pcntl bcmath gd intl
 
 # Instala o Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -37,10 +38,7 @@ RUN npm run build
 # Dá as permissões corretas para o Laravel poder salvar arquivos de log e cache
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
-# GARANTIA DE SUCESSO: Força a exclusão de qualquer cache que tenha ido pro GitHub por engano
-RUN rm -f /app/bootstrap/cache/*.php
-
-# Comando final: Mostra o status do banco, força a recriação de todas as tabelas e liga o app
+# Comando final: Exclui o banco fantasma, recria o .env perfeitamente com os dados do Render e liga o app
 CMD rm -f database/database.sqlite && \
     echo "APP_ENV=production" > .env && \
     echo "APP_KEY=\"${APP_KEY}\"" >> .env && \
