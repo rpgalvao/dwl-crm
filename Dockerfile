@@ -40,5 +40,18 @@ RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 # GARANTIA DE SUCESSO: Força a exclusão de qualquer cache que tenha ido pro GitHub por engano
 RUN rm -f /app/bootstrap/cache/*.php
 
-# Comando final: Filtra apenas as variáveis do sistema, cria o .env de forma limpa e liga o app
-CMD env | grep -iE '^(APP|DB|PG)_' > .env && php artisan config:clear && php artisan migrate --force && php artisan serve --host=0.0.0.0 --port=$PORT
+# Comando final: Exclui o banco fantasma, recria o .env perfeitamente com os dados do Render e liga o app
+CMD rm -f database/database.sqlite && \
+    echo "APP_ENV=production" > .env && \
+    echo "APP_KEY=\"${APP_KEY}\"" >> .env && \
+    echo "APP_URL=\"${APP_URL}\"" >> .env && \
+    echo "DB_CONNECTION=pgsql" >> .env && \
+    echo "DB_HOST=\"${DB_HOST}\"" >> .env && \
+    echo "DB_PORT=\"${DB_PORT}\"" >> .env && \
+    echo "DB_DATABASE=\"${DB_DATABASE}\"" >> .env && \
+    echo "DB_USERNAME=\"${DB_USERNAME}\"" >> .env && \
+    echo "DB_PASSWORD=\"${DB_PASSWORD}\"" >> .env && \
+    echo "PGSSLMODE=require" >> .env && \
+    php artisan config:clear && \
+    php artisan migrate --force && \
+    php artisan serve --host=0.0.0.0 --port=$PORT
