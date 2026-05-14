@@ -38,7 +38,7 @@ RUN npm run build
 # Dá as permissões corretas para o Laravel poder salvar arquivos de log e cache
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
-# Comando final: Seguro para produção, não apaga o banco e inclui o idioma
+# Comando final: Exclui o banco fantasma, recria o .env perfeitamente com os dados do Render e liga o app
 CMD rm -f database/database.sqlite && \
     echo "APP_ENV=production" > .env && \
     echo "APP_KEY=\"${APP_KEY}\"" >> .env && \
@@ -52,5 +52,6 @@ CMD rm -f database/database.sqlite && \
     echo "DB_PASSWORD=\"${DB_PASSWORD}\"" >> .env && \
     echo "PGSSLMODE=require" >> .env && \
     php artisan config:clear && \
-    php artisan migrate --force && \
+    php artisan db:show && \
+    php artisan migrate:fresh --force && \
     php artisan serve --host=0.0.0.0 --port=$PORT
