@@ -40,7 +40,7 @@ RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 # GARANTIA DE SUCESSO: Força a exclusão de qualquer cache que tenha ido pro GitHub por engano
 RUN rm -f /app/bootstrap/cache/*.php
 
-# Comando final: Exclui o banco fantasma, recria o .env perfeitamente com os dados do Render e liga o app
+# Comando final: Mostra o status do banco, força a recriação de todas as tabelas e liga o app
 CMD rm -f database/database.sqlite && \
     echo "APP_ENV=production" > .env && \
     echo "APP_KEY=\"${APP_KEY}\"" >> .env && \
@@ -53,5 +53,6 @@ CMD rm -f database/database.sqlite && \
     echo "DB_PASSWORD=\"${DB_PASSWORD}\"" >> .env && \
     echo "PGSSLMODE=require" >> .env && \
     php artisan config:clear && \
-    php artisan migrate --force && \
+    php artisan db:show && \
+    php artisan migrate:fresh --force && \
     php artisan serve --host=0.0.0.0 --port=$PORT
