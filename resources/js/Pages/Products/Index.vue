@@ -31,13 +31,13 @@ const excluirProduto = (id) => {
                 <h2
                     class="font-serif font-bold text-2xl text-dwl-darkblue leading-tight"
                 >
-                    Catálogo de Reagentes
+                    Catálogo de Produtos
                 </h2>
                 <Link
                     :href="route('products.create')"
                     class="bg-dwl-teal text-white px-5 py-2.5 rounded-md hover:bg-dwl-darkblue transition font-semibold text-sm shadow-sm"
                 >
-                    + Novo Reagente
+                    + Novo Produto
                 </Link>
             </div>
         </template>
