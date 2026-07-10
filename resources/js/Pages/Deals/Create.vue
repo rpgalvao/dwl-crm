@@ -82,10 +82,19 @@ const submit = () => {
                         </div>
 
                         <div>
-                            <label
-                                class="block text-sm font-bold text-gray-700 mb-1"
-                                >Cliente (Contato)</label
-                            >
+                            <div class="flex justify-between items-center mb-1">
+                                <label
+                                    class="block text-sm font-bold text-gray-700"
+                                    >Cliente (Contato)</label
+                                >
+                                <a
+                                    :href="route('contacts.create')"
+                                    target="_blank"
+                                    class="text-xs font-bold text-dwl-teal hover:text-dwl-darkblue hover:underline transition-colors"
+                                >
+                                    + Cadastrar Novo Cliente
+                                </a>
+                            </div>
                             <select
                                 v-model="form.contact_id"
                                 class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-3 text-gray-800"

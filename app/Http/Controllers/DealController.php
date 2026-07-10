@@ -64,7 +64,7 @@ class DealController extends Controller
 
         Deal::create($dealData);
 
-        return redirect()->back()->with('success', 'Negociação criada com sucesso!');
+        return redirect()->route('deals.index')->with('success', 'Negociação criada com sucesso!');
     }
 
     // Atualiza apenas o status quando o card é arrastado
@@ -105,7 +105,7 @@ class DealController extends Controller
 
         $deal->update($validated);
 
-        return redirect()->route('deals.index');
+        return redirect()->route('deals.index')->with('success', 'Negociação atualizada com sucesso');
     }
 
     // Exibe a tela de Detalhes da Negociação
