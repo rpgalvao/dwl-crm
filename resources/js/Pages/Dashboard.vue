@@ -207,7 +207,14 @@ const formatarData = (data) => {
                                         <td
                                             class="px-6 py-4 font-bold text-dwl-darkblue"
                                         >
-                                            {{ deal.title }}
+                                            <Link
+                                                :href="
+                                                    route('deals.edit', deal.id)
+                                                "
+                                                class="hover:text-dwl-teal hover:underline transition-colors"
+                                            >
+                                                {{ deal.title }}
+                                            </Link>
                                         </td>
                                         <td class="px-6 py-4 text-gray-600">
                                             {{ deal.contact?.name || "-" }}

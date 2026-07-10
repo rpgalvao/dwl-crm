@@ -14,6 +14,7 @@ const form = useForm({
     contact_id: props.deal.contact_id,
     estimated_value: props.deal.estimated_value,
     // Pegamos apenas a parte da data "YYYY-MM-DD" caso venha com horário do banco
+    status: props.deal.status, // <-- Adicione esta linha
     expected_closed_at: props.deal.expected_closed_at
         ? props.deal.expected_closed_at.split("T")[0]
         : "",
@@ -96,6 +97,30 @@ const submit = () => {
                                 class="text-red-500 text-sm mt-1"
                             >
                                 {{ form.errors.contact_id }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-sm font-semibold text-gray-700 mb-1"
+                                >Fase do Funil (Status)</label
+                            >
+                            <select
+                                v-model="form.status"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-700 transition-colors"
+                            >
+                                <option value="novo">Novo Lead</option>
+                                <option value="cotacao">Em Cotação</option>
+                                <option value="aprovacao">
+                                    Aguardando Aprovação
+                                </option>
+                                <option value="ganho">Ganho (Fechado)</option>
+                            </select>
+                            <div
+                                v-if="form.errors.status"
+                                class="text-red-500 text-sm mt-1"
+                            >
+                                {{ form.errors.status }}
                             </div>
                         </div>
 
