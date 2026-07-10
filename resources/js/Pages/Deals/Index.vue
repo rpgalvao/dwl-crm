@@ -6,12 +6,11 @@ import { ref, watch } from "vue";
 
 const props = defineProps({
     deals: {
-        type: Array,
+        type: [Array, Object], // Agora aceita tanto lista simples quanto caixas agrupadas
         required: true,
     },
 });
 
-// Colunas atualizadas com as cores da DWL (usando opacidade /20 e /10 para não ficar muito forte)
 const board = ref([
     { id: "novo", title: "Novos Leads", bg: "bg-gray-100", deals: [] },
     { id: "cotacao", title: "Em Cotação", bg: "bg-dwl-cyan/20", deals: [] },
@@ -33,9 +32,15 @@ watch(
     () => props.deals,
     (novasNegociacoes) => {
         board.value.forEach((coluna) => {
-            coluna.deals = novasNegociacoes.filter(
-                (deal) => deal.status === coluna.id,
-            );
+            // Se o Laravel mandou uma lista simples, filtramos.
+            // Se mandou já agrupado, pegamos direto da "caixa" correspondente à coluna.
+            if (Array.isArray(novasNegociacoes)) {
+                coluna.deals = novasNegociacoes.filter(
+                    (deal) => deal.status === coluna.id,
+                );
+            } else {
+                coluna.deals = novasNegociacoes[coluna.id] || [];
+            }
         });
     },
     { immediate: true },

@@ -52,6 +52,5 @@ CMD rm -f database/database.sqlite && \
     echo "DB_PASSWORD=\"${DB_PASSWORD}\"" >> .env && \
     echo "PGSSLMODE=require" >> .env && \
     php artisan config:clear && \
-    php artisan db:show && \
-    php artisan migrate:fresh --force && \
+    php artisan migrate --force && \
     php artisan serve --host=0.0.0.0 --port=$PORT
