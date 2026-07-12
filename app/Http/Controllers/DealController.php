@@ -6,32 +6,38 @@ use App\Models\Contact;
 use App\Models\Product;
 use Illuminate\Http\Request;
 use App\Models\Deal;
+use App\Models\User;
 use Inertia\Inertia;
 
 class DealController extends Controller
 {
     public function index()
     {
-        // Começa a montar a busca no banco
-        $query = Deal::with('contact');
+        $user = auth()->user();
 
-        // Se o usuário NÃO for admin, filtra apenas as negociações dele
-        if (!auth()->user()->is_admin) {
-            $query->where('user_id', auth()->id());
+        // Começa a montar a busca no banco trazendo o contato e o dono da negociação
+        $query = Deal::with(['contact', 'user']);
+
+        if($user->is_admin){
+            // Se for admin traz a lista de todas as negociações para o filtro
+            $sellers = User::orderBy('name')->get(['id', 'name']);
+
+            // Se o admin usar o filtro deve selecionar apenas as negociações filtradas
+            if($request->filled('seller_id')){
+                $query->where('user_id', $request->seller_id);
+            }
+        } else {
+            // Se for vendedor comum, mostra apenas as negociações dele mesmo e sem lista de filtros
+            $query->where('user_id', $user->id);
+            $sellers = [];
         }
 
         $deals = $query->get();
 
-        // Agrupa os resultados por status (seu código atual de agrupamento continua aqui)
-        $groupedDeals = [
-            'novo' => $deals->where('status', 'novo')->values(),
-            'cotacao' => $deals->where('status', 'cotacao')->values(),
-            'aprovacao' => $deals->where('status', 'aprovacao')->values(),
-            'ganho' => $deals->where('status', 'ganho')->values(),
-        ];
-
         return Inertia::render('Deals/Index', [
-            'deals' => $groupedDeals
+            'deals' => $deals,
+            'sellers' => $sellers,
+            'filters' => $request->only('seller_id'),
         ]);
     }
 

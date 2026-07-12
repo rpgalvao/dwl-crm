@@ -9,7 +9,20 @@ const props = defineProps({
         type: [Array, Object], // Agora aceita tanto lista simples quanto caixas agrupadas
         required: true,
     },
+    sellers: Array, // Lista de vendedores para o filtro
+    filters: Object, // Guarda o vendedor que está selecionado atualmente
 });
+
+const selectedSeller = ref(props.filters?.seller_id || "");
+
+// Função que recarrega a página aplicando o filtro
+const aplicarFiltro = () => {
+    router.get(
+        route("deals.index"),
+        { seller_id: selectedSeller.value },
+        { preserveState: true, replace: true },
+    );
+};
 
 const board = ref([
     { id: "novo", title: "Novos Leads", bg: "bg-gray-100", deals: [] },
@@ -92,12 +105,34 @@ const formatarData = (data) => {
                 >
                     Funil de Vendas (CRM)
                 </h2>
-                <Link
-                    :href="route('deals.create')"
-                    class="bg-dwl-teal text-white px-5 py-2.5 rounded-md hover:bg-dwl-darkblue transition font-semibold text-sm shadow-sm"
-                >
-                    + Nova Negociação
-                </Link>
+
+                <div class="flex items-center space-x-4">
+                    <!-- Filtro de Vendedores (Apenas Admin) -->
+                    <select
+                        v-if="
+                            $page.props.auth.user.is_admin && sellers.length > 0
+                        "
+                        v-model="selectedSeller"
+                        @change="aplicarFiltro"
+                        class="rounded-md border-gray-300 shadow-sm focus:border-dwl-teal focus:ring-dwl-teal text-sm py-2"
+                    >
+                        <option value="">Todos os Vendedores</option>
+                        <option
+                            v-for="seller in sellers"
+                            :key="seller.id"
+                            :value="seller.id"
+                        >
+                            {{ seller.name }}
+                        </option>
+                    </select>
+
+                    <Link
+                        :href="route('deals.create')"
+                        class="bg-dwl-teal text-white px-5 py-2.5 rounded-md hover:bg-dwl-darkblue transition font-semibold text-sm shadow-sm"
+                    >
+                        + Nova Negociação
+                    </Link>
+                </div>
             </div>
         </template>
 
@@ -148,11 +183,32 @@ const formatarData = (data) => {
                                         <span class="font-semibold"
                                             >Cliente:</span
                                         >
+
                                         {{
                                             deal.contact?.name ||
                                             "Cliente Removido"
                                         }}
                                     </p>
+                                    <!-- Etiqueta do Dono da Negociação (Visível para o Admin) -->
+                                    <div
+                                        v-if="$page.props.auth.user.is_admin"
+                                        class="mt-2 flex items-center text-[11px] text-gray-500 bg-gray-50 px-2 py-1 rounded w-fit border border-gray-100"
+                                    >
+                                        <svg
+                                            class="w-3 h-3 mr-1 text-dwl-slate"
+                                            fill="none"
+                                            stroke="currentColor"
+                                            viewBox="0 0 24 24"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                stroke-width="2"
+                                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                                            ></path>
+                                        </svg>
+                                        {{ deal.user?.name || "Desconhecido" }}
+                                    </div>
                                     <div
                                         class="flex justify-between items-end mt-3"
                                     >
