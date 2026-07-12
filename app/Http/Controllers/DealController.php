@@ -11,7 +11,7 @@ use Inertia\Inertia;
 
 class DealController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = auth()->user();
 
