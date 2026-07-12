@@ -110,7 +110,7 @@ const submit = () => {
 
                             <!-- Se for Admin, mostra o Select para transferir a negociação -->
                             <select
-                                v-if="$page.props.auth.user.is_admin"
+                                v-if="$page.props.auth.user.role === 'admin'"
                                 v-model="form.user_id"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-700 transition-colors"
                             >

@@ -18,8 +18,8 @@ class DealController extends Controller
         // Começa a montar a busca no banco trazendo o contato e o dono da negociação
         $query = Deal::with(['contact', 'user']);
 
-        if ($user->is_admin) {
-            // Se for admin traz a lista de todas as negociações para o filtro
+        if (in_array($user->role, ['admin', 'supervisor'])) {
+            // Se for admin ou supervisor, traz a lista de todas as negociações para o filtro
             $sellers = User::orderBy('name')->get(['id', 'name']);
 
             // Se o admin usar o filtro deve selecionar apenas as negociações filtradas
@@ -27,7 +27,7 @@ class DealController extends Controller
                 $query->where('user_id', $request->seller_id);
             }
         } else {
-            // Se for vendedor comum, mostra apenas as negociações dele mesmo e sem lista de filtros
+            // Se for vendedor comum, mostra apenas as próprias negociações
             $query->where('user_id', $user->id);
             $sellers = [];
         }
@@ -96,8 +96,10 @@ class DealController extends Controller
 
         $contacts = Contact::orderBy('name')->get(['id', 'name']);
 
-        // Se for admin, manda a lista de vendedores para o select. Se não, manda vazio.
-        $sellers = auth()->user()->is_admin ? User::orderBy('name')->get(['id', 'name']) : [];
+        // Apenas o Admin pode reatribuir a negociação, então só ele recebe a lista de vendedores.
+        $sellers = auth()->user()->role === 'admin'
+            ? User::orderBy('name')->get(['id', 'name'])
+            : [];
 
         return Inertia::render('Deals/Edit', [
             'deal' => $deal,
@@ -118,7 +120,7 @@ class DealController extends Controller
         ];
 
         // Se o usuário for admin, adicionamos a regra permitindo alterar o dono (user_id)
-        if (auth()->user()->is_admin) {
+        if (auth()->user()->role === 'admin') {
             $rules['user_id'] = 'required|exists:users,id';
         }
 

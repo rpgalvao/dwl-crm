@@ -110,7 +110,9 @@ const formatarData = (data) => {
                     <!-- Filtro de Vendedores (Apenas Admin) -->
                     <select
                         v-if="
-                            $page.props.auth.user.is_admin && sellers.length > 0
+                            ['admin', 'supervisor'].includes(
+                                $page.props.auth.user.role,
+                            ) && sellers.length > 0
                         "
                         v-model="selectedSeller"
                         @change="aplicarFiltro"
@@ -191,7 +193,11 @@ const formatarData = (data) => {
                                     </p>
                                     <!-- Etiqueta do Dono da Negociação (Visível para o Admin) -->
                                     <div
-                                        v-if="$page.props.auth.user.is_admin"
+                                        v-if="
+                                            ['admin', 'supervisor'].includes(
+                                                $page.props.auth.user.role,
+                                            )
+                                        "
                                         class="mt-2 flex items-center text-[11px] text-gray-500 bg-gray-50 px-2 py-1 rounded w-fit border border-gray-100"
                                     >
                                         <svg
