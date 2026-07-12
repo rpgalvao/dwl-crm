@@ -6,6 +6,7 @@ import { computed } from "vue";
 const props = defineProps({
     deal: Object,
     contacts: Array,
+    sellers: Array, // Recebe os vendedores (só virá preenchido para o Admin)
 });
 
 // O form já começa preenchido com os dados atuais
@@ -13,8 +14,8 @@ const form = useForm({
     title: props.deal.title,
     contact_id: props.deal.contact_id,
     estimated_value: props.deal.estimated_value,
-    // Pegamos apenas a parte da data "YYYY-MM-DD" caso venha com horário do banco
-    status: props.deal.status, // <-- Adicione esta linha
+    status: props.deal.status,
+    user_id: props.deal.user_id, // Recebe o dono atual da negociação
     expected_closed_at: props.deal.expected_closed_at
         ? props.deal.expected_closed_at.split("T")[0]
         : "",
@@ -97,6 +98,44 @@ const submit = () => {
                                 class="text-red-500 text-sm mt-1"
                             >
                                 {{ form.errors.contact_id }}
+                            </div>
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-sm font-semibold text-gray-700 mb-1"
+                            >
+                                Responsável (Dono da Negociação)
+                            </label>
+
+                            <!-- Se for Admin, mostra o Select para transferir a negociação -->
+                            <select
+                                v-if="$page.props.auth.user.is_admin"
+                                v-model="form.user_id"
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 px-4 py-2.5 text-gray-700 transition-colors"
+                            >
+                                <option
+                                    v-for="seller in sellers"
+                                    :key="seller.id"
+                                    :value="seller.id"
+                                >
+                                    {{ seller.name }}
+                                </option>
+                            </select>
+
+                            <!-- Se for vendedor comum, mostra apenas leitura com visual desabilitado (cinza) -->
+                            <div
+                                v-else
+                                class="mt-1 block w-full rounded-md border border-gray-200 bg-gray-50 px-4 py-2.5 text-gray-600 font-medium cursor-not-allowed"
+                            >
+                                {{ deal.user?.name || "Desconhecido" }}
+                            </div>
+
+                            <div
+                                v-if="form.errors.user_id"
+                                class="text-red-500 text-sm mt-1"
+                            >
+                                {{ form.errors.user_id }}
                             </div>
                         </div>
 

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Contact;
-use App\Models\Product;
-use Illuminate\Http\Request;
 use App\Models\Deal;
+use App\Models\Product;
 use App\Models\User;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class DealController extends Controller
@@ -18,12 +18,12 @@ class DealController extends Controller
         // Começa a montar a busca no banco trazendo o contato e o dono da negociação
         $query = Deal::with(['contact', 'user']);
 
-        if($user->is_admin){
+        if ($user->is_admin) {
             // Se for admin traz a lista de todas as negociações para o filtro
             $sellers = User::orderBy('name')->get(['id', 'name']);
 
             // Se o admin usar o filtro deve selecionar apenas as negociações filtradas
-            if($request->filled('seller_id')){
+            if ($request->filled('seller_id')) {
                 $query->where('user_id', $request->seller_id);
             }
         } else {
@@ -48,7 +48,7 @@ class DealController extends Controller
         $contacts = Contact::orderBy('name')->get(['id', 'name']);
 
         return Inertia::render('Deals/Create', [
-            'contacts' => $contacts
+            'contacts' => $contacts,
         ]);
     }
 
@@ -65,7 +65,7 @@ class DealController extends Controller
 
         // Pega os dados validados e junta com o ID do usuário logado
         $dealData = array_merge($validated, [
-            'user_id' => auth()->id()
+            'user_id' => auth()->id(),
         ]);
 
         Deal::create($dealData);
@@ -81,7 +81,7 @@ class DealController extends Controller
         ]);
 
         $deal->update([
-            'status' => $request->status
+            'status' => $request->status,
         ]);
 
         // Redireciona de volta silenciosamente
@@ -91,23 +91,39 @@ class DealController extends Controller
     // Carrega a tela de edição com os dados da negociação
     public function edit(Deal $deal)
     {
+        // Carrega a relação dos nomes na tela
+        $deal->load('contact', 'user');
+
         $contacts = Contact::orderBy('name')->get(['id', 'name']);
+
+        // Se for admin, manda a lista de vendedores para o select. Se não, manda vazio.
+        $sellers = auth()->user()->is_admin ? User::orderBy('name')->get(['id', 'name']) : [];
 
         return Inertia::render('Deals/Edit', [
             'deal' => $deal,
-            'contacts' => $contacts
+            'contacts' => $contacts,
+            'sellers' => $sellers,
         ]);
     }
 
     // Salva as alterações no banco de dados
     public function update(Request $request, Deal $deal)
     {
-        $validated = $request->validate([
+        $rules = [
             'title' => 'required|string|max:255',
             'contact_id' => 'required|exists:contacts,id',
             'estimated_value' => 'required|numeric',
             'expected_closed_at' => 'required|date',
-        ]);
+            'status' => 'required|string', // Aproveitando para validar o status que adicionamos no formulário antes!
+        ];
+
+        // Se o usuário for admin, adicionamos a regra permitindo alterar o dono (user_id)
+        if (auth()->user()->is_admin) {
+            $rules['user_id'] = 'required|exists:users,id';
+        }
+
+        // Valida os dados usando as regras dinâmicas que criamos acima
+        $validated = $request->validate($rules);
 
         $deal->update($validated);
 
@@ -119,13 +135,13 @@ class DealController extends Controller
     {
         // Carrega a negociação junto com o cliente e os itens/produtos já vinculados
         $deal->load('contact', 'items.product');
-        
+
         // Puxa o catálogo de reagentes para o vendedor escolher no dropdown
         $products = Product::orderBy('name')->get();
 
         return Inertia::render('Deals/Show', [
             'deal' => $deal,
-            'products' => $products
+            'products' => $products,
         ]);
     }
 

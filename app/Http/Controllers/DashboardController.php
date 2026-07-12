@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Deal;
 use App\Models\Contact;
-use Illuminate\Http\Request;
+use App\Models\Deal;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
@@ -15,9 +14,9 @@ class DashboardController extends Controller
 
         // Inicia as queries-base
         $dealsQuery = Deal::query();
-        
+
         // Se NÃO for admin, trava tudo para o ID dele
-        if (!$user->is_admin) {
+        if (! $user->is_admin) {
             $dealsQuery->where('user_id', $user->id);
         }
 
@@ -53,7 +52,7 @@ class DashboardController extends Controller
                 'valorFunil' => $valorFunil,
             ],
             'chartData' => $graficoFunil,
-            'recentDeals' => $ultimasNegociacoes
+            'recentDeals' => $ultimasNegociacoes,
         ]);
     }
 }
