@@ -10,8 +10,8 @@ class UserController extends Controller
 {
     public function index()
     {
-        // Trava de Segurança: Se não for admin, toma erro 403 (Acesso Negado)
-        abort_if(! auth()->user()->is_admin, 403, 'Acesso negado.');
+        // Trava de Segurança: Se o cargo não for admin e nem supervisor, toma erro 403 (Acesso Negado)
+        abort_if(! in_array(auth()->user()->role, ['admin', 'supervisor']), 403, 'Acesso negado.');
 
         // Puxa todos os usuários em ordem alfabética
         $users = User::orderBy('name')->get();
