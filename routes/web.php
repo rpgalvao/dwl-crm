@@ -1,15 +1,12 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\DealController;
-use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DealController;
+use App\Http\Controllers\ProductController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
-use App\Models\User;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
     // Redireciona qualquer acesso na raiz direto para a tela de login
@@ -48,24 +45,12 @@ Route::middleware('auth')->group(function () {
 
     // Gestão de Equipe (Usuários)
     Route::get('/users', [UserController::class, 'index'])->name('users.index');
-    Route::patch('/users/{user}/toggle-admin', [UserController::class, 'toggleAdmin'])->name('users.toggle-admin');
+    Route::patch('/users/{user}/role', [UserController::class, 'updateRole'])->name('users.update-role');
 
     // Rotas do perfil geradas pelo Breeze
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-// Rota secreta para virar Admin (vamos apagar isso depois!)
-Route::get('/virar-admin', function () {
-    $user = User::where('email', 'renato@dwldiagnostica.com')->first();
-    
-    if (!$user) {
-        return 'Usuário não encontrado. Você já criou a sua conta na tela de registro do sistema?';
-    }
-
-    $user->update(['is_admin' => true]);
-    return 'SUCESSO ABSOLUTO! Você agora é Administrador. Pode voltar para o sistema e ver o menu Equipe!';
 });
 
 require __DIR__.'/auth.php';

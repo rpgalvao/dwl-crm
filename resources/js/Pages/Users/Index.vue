@@ -1,19 +1,51 @@
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
-import { Head, Link, useForm } from "@inertiajs/vue3";
+import { Head, router } from "@inertiajs/vue3";
+import { ref } from "vue";
 
 defineProps({
     users: Array,
 });
 
-const form = useForm({});
+// Variáveis para controlar o aviso flutuante (Toast)
+const showToast = ref(false);
+const toastMessage = ref("");
 
-const toggleAdmin = (user) => {
-    if (confirm(`Tem certeza que deseja mudar a permissão de ${user.name}?`)) {
-        form.patch(route("users.toggle-admin", user.id), {
-            preserveScroll: true,
-        });
+const updateRole = (user, event) => {
+    const newRole = event.target.value;
+    if (
+        confirm(`Tem certeza que deseja alterar a permissão de ${user.name}?`)
+    ) {
+        router.patch(
+            route("users.update-role", user.id),
+            { role: newRole },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    // Se der certo, configura a mensagem e exibe o Toast por 3 segundos
+                    toastMessage.value = `Cargo de ${user.name} atualizado!`;
+                    showToast.value = true;
+                    setTimeout(() => {
+                        showToast.value = false;
+                    }, 3000);
+                },
+                onError: () => {
+                    event.target.value = user.role;
+                },
+            },
+        );
+    } else {
+        event.target.value = user.role;
     }
+};
+
+const formatRoleName = (role) => {
+    const roles = {
+        admin: "Administrador",
+        supervisor: "Supervisor",
+        seller: "Vendedor",
+    };
+    return roles[role] || role;
 };
 </script>
 
@@ -73,47 +105,55 @@ const toggleAdmin = (user) => {
                                 <td class="px-6 py-4 text-gray-600">
                                     {{ user.email }}
                                 </td>
+
                                 <td class="px-6 py-4 text-center">
                                     <span
                                         class="px-3 py-1 rounded-full text-[10px] font-bold border uppercase tracking-wider"
                                         :class="{
                                             'bg-dwl-lightgreen text-dwl-teal border-dwl-teal/30':
-                                                user.is_admin,
+                                                user.role === 'admin',
+                                            'bg-dwl-cyan/20 text-dwl-darkblue border-dwl-cyan':
+                                                user.role === 'supervisor',
                                             'bg-gray-100 text-gray-600 border-gray-200':
-                                                !user.is_admin,
+                                                user.role === 'seller',
                                         }"
                                     >
-                                        {{
-                                            user.is_admin
-                                                ? "Administrador"
-                                                : "Vendedor"
-                                        }}
+                                        {{ formatRoleName(user.role) }}
                                     </span>
                                 </td>
+
                                 <td class="px-6 py-4 text-right">
-                                    <button
+                                    <!-- Select visível apenas para o Admin e se não for ele mesmo -->
+                                    <select
                                         v-if="
+                                            $page.props.auth.user.role ===
+                                                'admin' &&
                                             $page.props.auth.user.id !== user.id
                                         "
-                                        @click="toggleAdmin(user)"
-                                        class="text-sm font-bold underline transition-colors"
-                                        :class="
-                                            user.is_admin
-                                                ? 'text-red-500 hover:text-red-700'
-                                                : 'text-dwl-teal hover:text-dwl-darkblue'
-                                        "
+                                        @change="updateRole(user, $event)"
+                                        :value="user.role"
+                                        class="text-sm rounded border-gray-300 text-gray-700 shadow-sm focus:border-dwl-teal focus:ring-dwl-teal py-1 pl-3 pr-8"
                                     >
-                                        {{
-                                            user.is_admin
-                                                ? "Rebaixar para Vendedor"
-                                                : "Promover a Admin"
-                                        }}
-                                    </button>
+                                        <option value="admin">
+                                            Administrador
+                                        </option>
+                                        <option value="supervisor">
+                                            Supervisor
+                                        </option>
+                                        <option value="seller">Vendedor</option>
+                                    </select>
+
+                                    <!-- Mensagem de bloqueio para Supervisores ou para o próprio Admin -->
                                     <span
                                         v-else
                                         class="text-gray-400 text-sm italic"
-                                        >Você</span
                                     >
+                                        {{
+                                            $page.props.auth.user.id === user.id
+                                                ? "Você"
+                                                : "Apenas Leitura"
+                                        }}
+                                    </span>
                                 </td>
                             </tr>
                         </tbody>
@@ -121,5 +161,35 @@ const toggleAdmin = (user) => {
                 </div>
             </div>
         </div>
+        <!-- Alerta Flutuante (Toast) -->
+        <transition
+            enter-active-class="transform ease-out duration-300 transition"
+            enter-from-class="translate-y-2 opacity-0 sm:translate-y-0 sm:translate-x-2"
+            enter-to-class="translate-y-0 opacity-100 sm:translate-x-0"
+            leave-active-class="transition ease-in duration-100"
+            leave-from-class="opacity-100"
+            leave-to-class="opacity-0"
+        >
+            <div
+                v-if="showToast"
+                class="fixed bottom-6 right-6 flex items-center bg-dwl-lightgreen border border-dwl-teal text-dwl-darkblue px-4 py-3 rounded-lg shadow-lg z-50"
+            >
+                <!-- Ícone de Sucesso -->
+                <svg
+                    class="w-5 h-5 text-dwl-teal mr-3"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                >
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                    ></path>
+                </svg>
+                <span class="font-bold text-sm">{{ toastMessage }}</span>
+            </div>
+        </transition>
     </AuthenticatedLayout>
 </template>

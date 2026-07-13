@@ -61,7 +61,11 @@ const showingNavigationDropdown = ref(false);
                                 </NavLink>
 
                                 <NavLink
-                                    v-if="$page.props.auth.user.is_admin"
+                                    v-if="
+                                        ['admin', 'supervisor'].includes(
+                                            $page.props.auth.user.role,
+                                        )
+                                    "
                                     :href="route('users.index')"
                                     :active="route().current('users.index')"
                                 >
@@ -197,7 +201,11 @@ const showingNavigationDropdown = ref(false);
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink
-                            v-if="$page.props.auth.user.is_admin"
+                            v-if="
+                                ['admin', 'supervisor'].includes(
+                                    $page.props.auth.user.role,
+                                )
+                            "
                             :href="route('users.index')"
                             :active="route().current('users.index')"
                         >
