@@ -3,6 +3,7 @@
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DealController;
+use App\Http\Controllers\DealNoteController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
@@ -27,6 +28,7 @@ Route::middleware('auth')->group(function () {
     Route::put('/negociacoes/{deal}', [DealController::class, 'update'])->name('deals.update');
     Route::get('/negociacoes/{deal}/detalhes', [DealController::class, 'show'])->name('deals.show');
     Route::post('/negociacoes/{deal}/itens', [DealController::class, 'storeItem'])->name('deals.items.store');
+    Route::post('/negociacoes/{deal}/notas', [DealNoteController::class, 'store'])->name('deals.notes.store');
 
     Route::get('/produtos', [ProductController::class, 'index'])->name('products.index');
     Route::get('/produtos/novo', [ProductController::class, 'create'])->name('products.create');
