@@ -8,14 +8,19 @@ const props = defineProps({
     products: Array,
 });
 
-// Formulário para adicionar um novo item
+// Formulário existente para adicionar produtos
 const form = useForm({
     product_id: "",
     quantity: 1,
     unit_price: "",
 });
 
-// A mágica: Fica "vigiando" a escolha do produto. Se escolher um, preenche o preço automático!
+// NOVO: Formulário exclusivo para a anotação
+const noteForm = useForm({
+    note: '',
+});
+
+// Mágica do produto (já existia)
 watch(
     () => form.product_id,
     (novoProdutoId) => {
@@ -28,13 +33,23 @@ watch(
     },
 );
 
+// Função de salvar o produto (já existia)
 const submitItem = () => {
     form.post(route("deals.items.store", props.deal.id), {
-        preserveScroll: true, // Não deixa a tela pular para o topo
-        onSuccess: () => form.reset(), // Limpa os campos após adicionar com sucesso
+        preserveScroll: true,
+        onSuccess: () => form.reset(),
     });
 };
 
+// NOVO: Função para enviar a nota e limpar a caixa de texto
+const submitNote = () => {
+    noteForm.post(route('deals.notes.store', props.deal.id), {
+        preserveScroll: true,
+        onSuccess: () => noteForm.reset('note'),
+    });
+};
+
+// Funções de formatação (já existiam)
 const formatarMoeda = (valor) => {
     if (!valor) return "R$ 0,00";
     return new Intl.NumberFormat("pt-BR", {
@@ -297,8 +312,66 @@ const formatarData = (data) => {
                             </p>
                         </div>
                     </div>
-                </div>
-            </div>
-        </div>
+                </div> <!-- Fechamento da caixa de Produtos -->
+
+                <!-- NOVO: Seção de Anotações e Histórico -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg border border-gray-200 p-6 mt-6">
+                    <h3 class="font-serif font-bold text-lg text-dwl-darkblue mb-4">
+                        Histórico e Anotações
+                    </h3>
+
+                    <!-- Formulário para digitar a nova nota -->
+                    <form @submit.prevent="submitNote" class="mb-6">
+                        <textarea
+                            v-model="noteForm.note"
+                            rows="3"
+                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-dwl-teal focus:ring-dwl-teal"
+                            placeholder="Registre uma observação, reunião, ou detalhe do cliente..."
+                            required
+                        ></textarea>
+                        <div class="mt-2 flex justify-end">
+                            <button
+                                type="submit"
+                                :disabled="noteForm.processing"
+                                class="bg-dwl-teal hover:bg-dwl-darkblue text-white font-bold py-2 px-6 rounded transition disabled:opacity-50"
+                            >
+                                Salvar Anotação
+                            </button>
+                        </div>
+                    </form>
+
+                    <!-- Feed (Linha do Tempo) -->
+                    <div class="space-y-4">
+                        <div v-if="!deal.notes || deal.notes.length === 0" class="text-sm text-gray-500 italic">
+                            Nenhuma anotação registrada no histórico ainda.
+                        </div>
+
+                        <!-- Repete as anotações vindas do banco de dados -->
+                        <div v-for="note in deal.notes" :key="note.id" class="flex gap-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                            <!-- Avatar (Bolinha com a inicial do nome) -->
+                            <div class="flex-shrink-0">
+                                <div class="w-10 h-10 rounded-full bg-dwl-lightgreen text-dwl-teal flex items-center justify-center font-bold text-lg uppercase border border-dwl-teal/30 shadow-sm">
+                                    {{ note.user?.name.charAt(0) || '?' }}
+                                </div>
+                            </div>
+
+                            <!-- Conteúdo da Nota -->
+                            <div class="flex-1">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="font-bold text-sm text-dwl-darkblue">
+                                        {{ note.user?.name || 'Usuário Desconhecido' }}
+                                    </span>
+                                    <span class="text-xs uppercase font-bold text-gray-400">
+                                        {{ new Date(note.created_at).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) }}
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-700 whitespace-pre-wrap leading-relaxed">{{ note.note }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- Fim da Seção de Anotações -->
+
+            </div> <!-- Fim do max-w-7xl -->
+        </div> <!-- Fim do py-8 -->
     </AuthenticatedLayout>
 </template>

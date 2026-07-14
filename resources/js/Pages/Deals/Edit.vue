@@ -208,7 +208,7 @@ const submit = () => {
                                 :href="route('deals.show', deal.id)"
                                 class="inline-flex justify-center items-center px-4 py-2.5 text-sm font-bold text-dwl-teal hover:text-dwl-darkblue transition-colors mr-auto"
                             >
-                                🛒 Gerenciar Reagentes
+                                📂 Painel da Negociação
                             </Link>
                             <Link
                                 :href="route('deals.index')"

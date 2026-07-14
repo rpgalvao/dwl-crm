@@ -92,7 +92,7 @@ class DealController extends Controller
     public function edit(Deal $deal)
     {
         // Carrega a relação dos nomes na tela
-        $deal->load('contact', 'user');
+        $deal->load('contact', 'user', 'notes.user');
 
         $contacts = Contact::orderBy('name')->get(['id', 'name']);
 
@@ -136,7 +136,7 @@ class DealController extends Controller
     public function show(Deal $deal)
     {
         // Carrega a negociação junto com o cliente e os itens/produtos já vinculados
-        $deal->load('contact', 'items.product');
+        $deal->load('contact', 'items.product', 'notes.user');
 
         // Puxa o catálogo de reagentes para o vendedor escolher no dropdown
         $products = Product::orderBy('name')->get();
