@@ -15,8 +15,8 @@ class DashboardController extends Controller
         // Inicia as queries-base
         $dealsQuery = Deal::query();
 
-        // Se NÃO for admin, trava tudo para o ID dele
-        if (! $user->is_admin) {
+        // Se NÃO for admin ou supervisor, trava tudo para o ID do vendedor
+        if (! in_array($user->role, ['admin', 'supervisor'])) {
             $dealsQuery->where('user_id', $user->id);
         }
 
