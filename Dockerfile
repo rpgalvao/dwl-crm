@@ -51,6 +51,10 @@ CMD rm -f database/database.sqlite && \
     echo "DB_USERNAME=\"${DB_USERNAME}\"" >> .env && \
     echo "DB_PASSWORD=\"${DB_PASSWORD}\"" >> .env && \
     echo "PGSSLMODE=require" >> .env && \
+    echo "QUEUE_CONNECTION=sync" >> .env && \
+    echo "MAIL_MAILER=\"${MAIL_MAILER}\"" >> .env && \
+    echo "MAIL_FROM_ADDRESS=\"${MAIL_FROM_ADDRESS}\"" >> .env && \
+    echo "RESEND_API_KEY=\"${RESEND_API_KEY}\"" >> .env && \
     php artisan config:clear && \
     php artisan migrate --force && \
     php artisan optimize:clear && \
